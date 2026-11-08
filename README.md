@@ -1,17 +1,5 @@
 # tp3_channels
 
-A new Flutter project.
+<img width="1012" height="2046" alt="bb4f35d3-d89f-4199-a9cb-0da1f94175bb" src="https://github.com/user-attachments/assets/ae159196-cc53-47e7-b2bf-988c10bec1c8" />
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img width="1014" height="2048" alt="c45d718e-5c27-4dfb-a922-fff5d8860ca7" src="https://github.com/user-attachments/assets/77d21d9b-8569-4e69-844c-e238ef51b112" />
