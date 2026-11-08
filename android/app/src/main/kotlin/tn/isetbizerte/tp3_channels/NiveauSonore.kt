@@ -71,6 +71,7 @@ class NiveauSonore(private val context: Context) : EventChannel.StreamHandler {
             recorder.startRecording()
 
             job = scope.launch(Dispatchers.IO) {
+                var dernierEnvoi = 0L
                 val buffer = ShortArray(bufferSize / 2)
 
                 try {
@@ -92,9 +93,15 @@ class NiveauSonore(private val context: Context) : EventChannel.StreamHandler {
                                 -90.0
                             }
 
-                            withContext(Dispatchers.Main) {
-                                sink?.success(db)
-                            }
+                            val maintenant = SystemClock.elapsedRealtime()
+
+if (maintenant - dernierEnvoi >= 200) {
+    dernierEnvoi = maintenant
+
+    withContext(Dispatchers.Main) {
+        sink?.success(db)
+    }
+}
                         }
                     }
                 } catch (e: Exception) {

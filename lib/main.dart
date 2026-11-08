@@ -78,6 +78,34 @@ SDK : ${infos['sdk']}
     }
   }
 
+  
+Future<void> _controlerTorche(bool etat) async {
+  try {
+    final autorise =
+        await CanauxNatifs.demanderPermissionCamera();
+
+    if (!autorise) {
+      setState(() {
+        _message = 'Permission caméra refusée';
+      });
+      return;
+    }
+
+    final resultat =
+        await CanauxNatifs.controlerTorche(etat);
+
+    setState(() {
+      _message = resultat;
+    });
+
+  } on PlatformException catch (e) {
+    setState(() {
+      _message = '${e.code} : ${e.message}';
+    });
+  }
+}
+
+
   Widget _bouton(String texte, VoidCallback action) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -153,6 +181,35 @@ SDK : ${infos['sdk']}
               const Divider(height: 30),
 
               const Text(
+                'Capteur de proximité',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 15),
+
+              StreamBuilder<bool>(
+                stream: CanauxNatifs.ecouterProximite(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Text('Erreur : ${snapshot.error}');
+                  }
+
+                  if (!snapshot.hasData) {
+                    return const Text('En attente du capteur...');
+                  }
+
+                  return Text(
+                    snapshot.data! ? 'Objet proche' : 'Objet éloigné',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                },
+              ),
+
+              const Divider(height: 30),
+
+              const Text(
                 'Niveau sonore',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -184,6 +241,24 @@ SDK : ${infos['sdk']}
                     );
                   },
                 ),
+
+              const Divider(height: 30),
+
+              const Text(
+                'Contrôle de la torche',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+
+              _bouton(
+                'Allumer la torche',
+                () => _controlerTorche(true),
+              ),
+
+              _bouton(
+                'Éteindre la torche',
+                () => _controlerTorche(false),
+              ),
 
               const SizedBox(height: 20),
 

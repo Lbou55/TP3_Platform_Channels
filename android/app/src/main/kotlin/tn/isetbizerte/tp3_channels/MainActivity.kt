@@ -12,18 +12,20 @@ class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "appareil/infos"
     private val AUDIO_PERMISSION = "audio/permission"
-    private val REQUEST_CODE = 1001
+    private val CAMERA_PERMISSION = "camera/permission"
 
-    private var pendingPermissionResult: MethodChannel.Result? = null
+    private val AUDIO_REQUEST_CODE = 1001
+    private val CAMERA_REQUEST_CODE = 1002
+
+    private var pendingAudioPermissionResult: MethodChannel.Result? = null
+    private var pendingCameraPermissionResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            CHANNEL
-        ).setMethodCallHandler { call, result ->
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
 
+        MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "lire") {
                 val infos = mapOf(
                     "fabricant" to Build.MANUFACTURER,
@@ -31,39 +33,49 @@ class MainActivity : FlutterActivity() {
                     "version" to Build.VERSION.RELEASE,
                     "sdk" to Build.VERSION.SDK_INT
                 )
-
                 result.success(infos)
             } else {
                 result.notImplemented()
             }
         }
 
-        Vibreur(this).enregistrer(flutterEngine.dartExecutor.binaryMessenger)
+        Vibreur(this).enregistrer(messenger)
+        CapteurLumiere(this).enregistrer(messenger)
+        NiveauSonore(this).enregistrer(messenger)
+        CapteurProximite(this).enregistrer(messenger)
+        Torche(this).enregistrer(messenger)
 
-        CapteurLumiere(this).enregistrer(flutterEngine.dartExecutor.binaryMessenger)
-
-        NiveauSonore(this).enregistrer(flutterEngine.dartExecutor.binaryMessenger)
-
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            AUDIO_PERMISSION
-        ).setMethodCallHandler { call, result ->
-
+        MethodChannel(messenger, AUDIO_PERMISSION).setMethodCallHandler { call, result ->
             if (call.method == "demander") {
-
                 if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
                     PackageManager.PERMISSION_GRANTED
                 ) {
                     result.success(true)
                 } else {
-                    pendingPermissionResult = result
-
+                    pendingAudioPermissionResult = result
                     requestPermissions(
                         arrayOf(Manifest.permission.RECORD_AUDIO),
-                        REQUEST_CODE
+                        AUDIO_REQUEST_CODE
                     )
                 }
+            } else {
+                result.notImplemented()
+            }
+        }
 
+        MethodChannel(messenger, CAMERA_PERMISSION).setMethodCallHandler { call, result ->
+            if (call.method == "demander") {
+                if (checkSelfPermission(Manifest.permission.CAMERA) ==
+                    PackageManager.PERMISSION_GRANTED
+                ) {
+                    result.success(true)
+                } else {
+                    pendingCameraPermissionResult = result
+                    requestPermissions(
+                        arrayOf(Manifest.permission.CAMERA),
+                        CAMERA_REQUEST_CODE
+                    )
+                }
             } else {
                 result.notImplemented()
             }
@@ -75,18 +87,21 @@ class MainActivity : FlutterActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(
-            requestCode,
-            permissions,
-            grantResults
-        )
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == REQUEST_CODE) {
-            val granted = grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED
+        val granted = grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
 
-            pendingPermissionResult?.success(granted)
-            pendingPermissionResult = null
+        when (requestCode) {
+            AUDIO_REQUEST_CODE -> {
+                pendingAudioPermissionResult?.success(granted)
+                pendingAudioPermissionResult = null
+            }
+
+            CAMERA_REQUEST_CODE -> {
+                pendingCameraPermissionResult?.success(granted)
+                pendingCameraPermissionResult = null
+            }
         }
     }
 }
